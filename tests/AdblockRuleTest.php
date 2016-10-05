@@ -23,8 +23,8 @@ class AdblockRuleTest extends \PHPUnit_Framework_TestCase
 
     public function testEscapeSpecialCharacters()
     {
-        $rule = new AdblockRule('.$+?{}()[]\\');
-        $this->assertEquals('\.\$\+\?\{\}\(\)\[\]\\\\', $rule->getRegex());
+        $rule = new AdblockRule('.$+?{}()[]/\\');
+        $this->assertEquals('\.\$\+\?\{\}\(\)\[\]\/\\\\', $rule->getRegex());
     }
 
     public function testCaret()
@@ -42,7 +42,7 @@ class AdblockRuleTest extends \PHPUnit_Framework_TestCase
     public function testVerticalBars()
     {
         $rule = new AdblockRule('||domain');
-        $this->assertEquals('^(?:[^:/?#]+:)?(?://(?:[^/?#]*\.)?)?domain', $rule->getRegex());
+        $this->assertEquals('^([^:\/?#]+:)?(\/\/([^\/?#]*\.)?)?domain', $rule->getRegex());
 
         $rule = new AdblockRule('|domain');
         $this->assertEquals('^domain', $rule->getRegex());

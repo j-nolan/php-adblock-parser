@@ -36,6 +36,10 @@ class AdblockRule
 
     private function makeRegex()
     {
+        if (empty($this->rule)) {
+            throw new InvalidRuleException("Empty rule");
+        }
+
         $regex = $this->rule;
 
         // Check if the rule isn't already regexp
@@ -43,14 +47,14 @@ class AdblockRule
             $this->regex = mb_substr($this->rule, 1, mb_strlen($this->rule) - 2);
 
             if (empty($this->regex)) {
-                throw new InvalidRuleException("Invalid rule " . $this->rule);
+                throw new InvalidRuleException("Empty rule");
             }
 
             return;
         }
 
         // escape special regex characters
-        $regex = preg_replace("/([\\\.\$\+\?\{\}\(\)\[\]])/", "\\\\$1", $this->rule);
+        $regex = preg_replace("/([\\\.\$\+\?\{\}\(\)\[\]\/])/", "\\\\$1", $this->rule);
 
         // Separator character ^ matches anything but a letter, a digit, or
         // one of the following: _ - . %. The end of the address is also
@@ -69,7 +73,7 @@ class AdblockRule
         if ($this->startsWith($regex, '||')) {
             if (mb_strlen($regex) > 2) {
                 // http://tools.ietf.org/html/rfc3986#appendix-B
-                $regex = "^(?:[^:/?#]+:)?(?://(?:[^/?#]*\.)?)?" . mb_substr($regex, 2);
+                $regex = "^([^:\/?#]+:)?(\/\/([^\/?#]*\.)?)?" . mb_substr($regex, 2);
             }
         // | in the beginning means start of the address
         } elseif ($this->startsWith($regex, '|')) {

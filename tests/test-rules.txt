@@ -1,0 +1,2 @@
+/avantlink/*
+/avmws_*.js

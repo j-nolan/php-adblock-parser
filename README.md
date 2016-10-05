@@ -27,6 +27,7 @@ To learn about Adblock Plus filter syntax check these links:
    use Limonte\AdblockParser;
 
    $adblockParser = AdblockParser($rules);
+   $adblockParser->addRules($anotherRules);
    ```
 
 3. Use this instance to check if an URL should be blocked or not:

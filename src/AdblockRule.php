@@ -19,8 +19,8 @@ class AdblockRule
         if ($this->startswith('/') && $this->endswith('/')) {
             $rule = mb_substr($this->rule, 1, mb_strlen($this->rule) - 2);
 
-            if (empty($this->rule)) {
-                throw new Exception("Invalid rule " . $this->rule);
+            if (empty($rule)) {
+                throw new InvalidRuleException("Invalid rule " . $this->rule);
             }
 
             return $rule;

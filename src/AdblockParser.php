@@ -7,7 +7,8 @@ class AdblockParser
 
     public function __construct($rules = [])
     {
-        $this->rules = $rules;
+        $this->rules = [];
+        $this->addRules($rules);
     }
 
     /**
@@ -15,7 +16,12 @@ class AdblockParser
      */
     public function addRules($rules)
     {
-        $this->rules = array_merge($this->rules, $rules);
+        foreach ($rules as $rule) {
+            try {
+                $this->rules[] = new AdblockRule($rule);
+            } catch (InvalidRuleException $e) {
+            }
+        }
     }
 
     /**

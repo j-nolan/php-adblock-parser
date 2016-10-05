@@ -6,10 +6,10 @@ use Limonte\InvalidRuleException;
 
 class AdblockRuleTest extends \PHPUnit_Framework_TestCase
 {
-    public function testToRegex()
+    public function testGetRegex()
     {
-        $adblockRule = new AdblockRule('/slashes should be trimmed/');
-        $this->assertEquals('slashes should be trimmed', $adblockRule->toRegex());
+        $rule = new AdblockRule('/slashes should be trimmed/');
+        $this->assertEquals('slashes should be trimmed', $rule->getRegex());
     }
 
     /**
@@ -18,36 +18,43 @@ class AdblockRuleTest extends \PHPUnit_Framework_TestCase
     public function testInvalidRegex()
     {
         $invalidRule = new AdblockRule('//');
-        $invalidRule->toRegex();
+        $invalidRule->getRegex();
     }
 
     public function testEscapeSpecialCharacters()
     {
-        $adblockRule = new AdblockRule('.$+?{}()[]\\');
-        $this->assertEquals('\.\$\+\?\{\}\(\)\[\]\\\\', $adblockRule->toRegex());
+        $rule = new AdblockRule('.$+?{}()[]\\');
+        $this->assertEquals('\.\$\+\?\{\}\(\)\[\]\\\\', $rule->getRegex());
     }
 
     public function testCaret()
     {
-        $adblockRule = new AdblockRule('domain^');
-        $this->assertEquals('domain([^\w\d_\-.%]|$)', $adblockRule->toRegex());
+        $rule = new AdblockRule('domain^');
+        $this->assertEquals('domain([^\w\d_\-.%]|$)', $rule->getRegex());
     }
 
     public function testAsterisk()
     {
-        $adblockRule = new AdblockRule('domain*');
-        $this->assertEquals('domain.*', $adblockRule->toRegex());
+        $rule = new AdblockRule('domain*');
+        $this->assertEquals('domain.*', $rule->getRegex());
     }
 
     public function testVerticalBars()
     {
-        $adblockRule = new AdblockRule('||domain');
-        $this->assertEquals('^(?:[^:/?#]+:)?(?://(?:[^/?#]*\.)?)?domain', $adblockRule->toRegex());
+        $rule = new AdblockRule('||domain');
+        $this->assertEquals('^(?:[^:/?#]+:)?(?://(?:[^/?#]*\.)?)?domain', $rule->getRegex());
 
-        $adblockRule = new AdblockRule('|domain');
-        $this->assertEquals('^domain', $adblockRule->toRegex());
+        $rule = new AdblockRule('|domain');
+        $this->assertEquals('^domain', $rule->getRegex());
 
-        $adblockRule = new AdblockRule('domain|bl||ah');
-        $this->assertEquals('domain\|bl\|\|ah', $adblockRule->toRegex());
+        $rule = new AdblockRule('domain|bl||ah');
+        $this->assertEquals('domain\|bl\|\|ah', $rule->getRegex());
+    }
+
+    public function testMatchUrl()
+    {
+        $rule = new AdblockRule('swf|');
+        $this->assertTrue($rule->matchUrl("http://example.com/annoyingflash.swf"));
+        $this->assertFalse($rule->matchUrl("http://example.com/swf/index.html"));
     }
 }

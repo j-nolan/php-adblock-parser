@@ -5,27 +5,48 @@ class AdblockRule
 {
     private $rule;
 
+    private $regex;
+
     public function __construct($rule)
     {
         $this->rule = $rule;
+        $this->makeRegex();
+    }
+
+    /**
+     * @param  string  $url
+     *
+     * @return  boolean
+     */
+    public function matchUrl($url)
+    {
+        return (boolean)preg_match(
+            '/' . $this->getRegex() . '/',
+            $url
+        );
     }
 
     /**
      * @return  string
      */
-    public function toRegex()
+    public function getRegex()
+    {
+        return $this->regex;
+    }
+
+    private function makeRegex()
     {
         $regex = $this->rule;
 
         // Check if the rule isn't already regexp
         if ($this->startsWith($regex, '/') && $this->endsWith($regex, '/')) {
-            $regex = mb_substr($this->rule, 1, mb_strlen($this->rule) - 2);
+            $this->regex = mb_substr($this->rule, 1, mb_strlen($this->rule) - 2);
 
-            if (empty($regex)) {
+            if (empty($this->regex)) {
                 throw new InvalidRuleException("Invalid rule " . $this->rule);
             }
 
-            return $regex;
+            return;
         }
 
         // escape special regex characters
@@ -56,9 +77,9 @@ class AdblockRule
         }
 
         // other | symbols should be escaped
-        $regex = str_replace("|", "\|", $regex);
+        $regex = preg_replace("/\|(?![\$])/", "\|$1", $regex);
 
-        return $regex;
+        $this->regex = $regex;
     }
 
     private function startsWith($haystack, $needle)

@@ -22,7 +22,7 @@ To learn about Adblock Plus filter syntax check these links:
 2. Create AdblockRules instance from the rules array:
 
    ```php
-   use Limonte\PhpAdblockParser as AdblockParser;
+   use Limonte\AdblockParser;
 
    $adblockParser = AdblockParser($rules);
    ```

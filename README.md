@@ -9,8 +9,8 @@ Usage
 
 To learn about Adblock Plus filter syntax check these links:
 
-* https://adblockplus.org/en/filter-cheatsheet
-* https://adblockplus.org/en/filters
+- https://adblockplus.org/en/filter-cheatsheet
+- https://adblockplus.org/en/filters
 
 1. Get filter rules somewhere: write them manually, read lines from a file
    downloaded from [EasyList](https://easylist.to/), etc.:
@@ -37,3 +37,9 @@ To learn about Adblock Plus filter syntax check these links:
    $adblockParser->shouldBlock("http://ads.example.com"); // true
    $adblockParser->shouldBlock("http://non-ads.example.com"); // false
    ```
+
+Related projects
+----------------
+
+- [scrapinghub/adblockparser](https://github.com/scrapinghub/adblockparser/)
+- [easylist/easylist](https://github.com/easylist/easylist/)

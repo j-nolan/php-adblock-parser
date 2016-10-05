@@ -1,6 +1,8 @@
 PHP parser for Adblock Plus filters
 ===================================
 
+[![Build Status](https://semaphoreci.com/api/v1/limonte/php-adblock-parser/branches/master/badge.svg)](https://semaphoreci.com/limonte/php-adblock-parser)
+
 Usage
 -----
 

@@ -19,6 +19,7 @@ class AdblockParserTest extends \PHPUnit_Framework_TestCase
     {
         $parser = new AdblockParser;
         $parser->loadRules(__DIR__ . '/test-rules.txt');
+        $this->assertEquals(3, count($parser->getRules()));
         $this->assertTrue($parser->shouldBlock('http://example.com/avantlink/123'));
         $this->assertTrue($parser->shouldBlock('http://example.com//avmws_asd.js'));
     }

@@ -60,6 +60,10 @@ class AdblockParser
     public function shouldBlock($url)
     {
         foreach ($this->rules as $rule) {
+            if ($rule->isComment()) {
+                continue;
+            }
+
             if ($rule->matchUrl($url)) {
                 return true;
             }

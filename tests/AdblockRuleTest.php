@@ -57,4 +57,14 @@ class AdblockRuleTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($rule->matchUrl("http://example.com/annoyingflash.swf"));
         $this->assertFalse($rule->matchUrl("http://example.com/swf/index.html"));
     }
+
+    public function testComment()
+    {
+        $rule = new AdblockRule('!this is comment');
+        $this->assertTrue($rule->isComment());
+        $rule = new AdblockRule('[Adblock Plus 1.1]');
+        $this->assertTrue($rule->isComment());
+        $rule = new AdblockRule('non-comment rule');
+        $this->assertFalse($rule->isComment());
+    }
 }

@@ -7,10 +7,16 @@ class AdblockRule
 
     private $regex;
 
+    private $isComment = false;
+
     public function __construct($rule)
     {
         $this->rule = $rule;
-        $this->makeRegex();
+        if ($this->startsWith($rule, '!') || $this->startsWith($rule, '[Adblock')) {
+            $this->isComment = true;
+        } else {
+            $this->makeRegex();
+        }
     }
 
     /**
@@ -32,6 +38,14 @@ class AdblockRule
     public function getRegex()
     {
         return $this->regex;
+    }
+
+    /**
+     * @return  boolean
+     */
+    public function isComment()
+    {
+        return $this->isComment;
     }
 
     private function makeRegex()

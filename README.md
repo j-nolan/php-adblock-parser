@@ -41,5 +41,5 @@ To learn about Adblock Plus filter syntax check these links:
 Related projects
 ----------------
 
-- [scrapinghub/adblockparser](https://github.com/scrapinghub/adblockparser/)
-- [easylist/easylist](https://github.com/easylist/easylist/)
+- Python parser for Adblock Plus filters: [scrapinghub/adblockparser](https://github.com/scrapinghub/adblockparser/)
+- EasyList filter subscription: [easylist/easylist](https://github.com/easylist/easylist/)

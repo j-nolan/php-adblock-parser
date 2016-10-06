@@ -25,14 +25,22 @@ class AdblockParser
     }
 
     /**
-     * @param  string  $path
+     * @param  string|array  $path
      */
     public function loadRules($path)
     {
-        $content = @file_get_contents($path);
-        if ($content) {
-            $rules = preg_split("/(\r\n|\n|\r)/", $content);
-            $this->addRules($rules);
+        // single resource
+        if (is_string($path)) {
+            $content = @file_get_contents($path);
+            if ($content) {
+                $rules = preg_split("/(\r\n|\n|\r)/", $content);
+                $this->addRules($rules);
+            }
+        // array of resources
+        } elseif (is_array($path)) {
+            foreach ($path as $item) {
+                $this->loadRules($item);
+            }
         }
     }
 

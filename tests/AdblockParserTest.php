@@ -33,6 +33,14 @@ class AdblockParserTest extends \PHPUnit_Framework_TestCase
             'http://ads.example.com.ua/foo.gif',
             'http://example.com/redirect/http://ads.example.com/',
         ]);
+
+        $this->parser = new AdblockParser(['|http://baddomain.example/']);
+        $this->shouldBlock([
+            'http://baddomain.example/banner.gif',
+        ]);
+        $this->shouldNotBlock([
+            'http://gooddomain.example/analyze?http://baddomain.example',
+        ]);
     }
 
     public function testBlockExactAddress()
@@ -44,6 +52,69 @@ class AdblockParserTest extends \PHPUnit_Framework_TestCase
         $this->shouldNotBlock([
             'http://example.com/foo.gif',
             'http://example.info/redirect/http://example.com/',
+        ]);
+    }
+
+    public function testBlockBeginningDomain()
+    {
+        $this->parser = new AdblockParser(['||example.com/banner.gif']);
+        $this->shouldBlock([
+            'http://example.com/banner.gif',
+            'https://example.com/banner.gif',
+            'http://www.example.com/banner.gif',
+        ]);
+        $this->shouldNotBlock([
+            'http://badexample.com/banner.gif',
+            'http://gooddomain.example/analyze?http://example.com/banner.gif',
+        ]);
+    }
+
+    public function testCaretSeparator()
+    {
+        $this->parser = new AdblockParser(['http://example.com^']);
+        $this->shouldBlock([
+            'http://example.com/',
+            'http://example.com:8000/ ',
+        ]);
+        $this->shouldNotBlock([
+            'http://example.com.ar/',
+        ]);
+
+        $this->parser = new AdblockParser(['^example.com^']);
+        $this->shouldBlock([
+            'http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82',
+        ]);
+
+        $this->parser = new AdblockParser(['^%D1%82%D0%B5%D1%81%D1%82^']);
+        $this->shouldBlock([
+            'http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82',
+        ]);
+
+        $this->parser = new AdblockParser(['^foo.bar^']);
+        $this->shouldBlock([
+            'http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82',
+        ]);
+    }
+
+    public function testException()
+    {
+        $this->parser = new AdblockParser(['adv', '@@advice.']);
+        $this->shouldBlock([
+            'http://example.com/advert.html',
+        ]);
+        $this->shouldNotBlock([
+            'http://example.com/advice.html',
+        ]);
+
+        $this->parser = new AdblockParser(['@@|http://example.com', '@@advice.', 'adv', '!foo']);
+        $this->shouldBlock([
+            'http://examples.com/advert.html',
+        ]);
+        $this->shouldNotBlock([
+            'http://example.com/advice.html',
+            'http://example.com/advert.html',
+            'http://examples.com/advice.html',
+            'http://examples.com/#!foo',
         ]);
     }
 

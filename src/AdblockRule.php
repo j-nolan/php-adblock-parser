@@ -9,11 +9,21 @@ class AdblockRule
 
     private $isComment = false;
 
+    private $isHtml = false;
+
     public function __construct($rule)
     {
         $this->rule = $rule;
+
+        // comment
         if ($this->startsWith($rule, '!') || $this->startsWith($rule, '[Adblock')) {
             $this->isComment = true;
+
+        // HTML rule
+        } elseif ($this->contains($rule, '##') || $this->contains($rule, '#@#')) {
+            $this->isHtml = true;
+
+        // URI rule
         } else {
             $this->makeRegex();
         }
@@ -46,6 +56,14 @@ class AdblockRule
     public function isComment()
     {
         return $this->isComment;
+    }
+
+    /**
+     * @return  boolean
+     */
+    public function isHtml()
+    {
+        return $this->isHtml;
     }
 
     private function makeRegex()
@@ -114,5 +132,10 @@ class AdblockRule
         }
 
         return (mb_substr($haystack, -$length) === $needle);
+    }
+
+    private function contains($haystack, $needle)
+    {
+        return strpos($haystack, $needle) !== false;
     }
 }

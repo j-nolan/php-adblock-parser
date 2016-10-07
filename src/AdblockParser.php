@@ -60,7 +60,7 @@ class AdblockParser
     public function shouldBlock($url)
     {
         foreach ($this->rules as $rule) {
-            if ($rule->isComment()) {
+            if ($rule->isComment() || $rule->isHtml()) {
                 continue;
             }
 
@@ -70,5 +70,15 @@ class AdblockParser
         }
 
         return false;
+    }
+
+    /**
+     * @param  string  $url
+     *
+     * @return boolean
+     */
+    public function shouldNotBlock($url)
+    {
+        return !$this->shouldBlock($url);
     }
 }

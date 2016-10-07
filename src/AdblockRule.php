@@ -11,9 +11,16 @@ class AdblockRule
 
     private $isHtml = false;
 
+    private $isException = false;
+
     public function __construct($rule)
     {
         $this->rule = $rule;
+
+        if ($this->startsWith($this->rule, '@@')) {
+            $this->isException = true;
+            $this->rule = mb_substr($this->rule, 2);
+        }
 
         // comment
         if ($this->startsWith($rule, '!') || $this->startsWith($rule, '[Adblock')) {
@@ -64,6 +71,14 @@ class AdblockRule
     public function isHtml()
     {
         return $this->isHtml;
+    }
+
+    /**
+     * @return  boolean
+     */
+    public function isException()
+    {
+        return $this->isException;
     }
 
     private function makeRegex()

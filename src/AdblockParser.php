@@ -22,6 +22,11 @@ class AdblockParser
             } catch (InvalidRuleException $e) {
             }
         }
+
+        // Sort rules, eceptions first
+        usort($this->rules, function ($a, $b) {
+            return (int)$a->isException() < (int)$b->isException();
+        });
     }
 
     /**
@@ -65,6 +70,9 @@ class AdblockParser
             }
 
             if ($rule->matchUrl($url)) {
+                if ($rule->isException()) {
+                    return false;
+                }
                 return true;
             }
         }

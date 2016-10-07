@@ -35,13 +35,28 @@ class AdblockParserTest extends \PHPUnit_Framework_TestCase
         ]);
     }
 
+    public function testBlockExactAddress()
+    {
+        $this->parser = new AdblockParser(['|http://example.com/|']);
+        $this->shouldBlock([
+            'http://example.com/',
+        ]);
+        $this->shouldNotBlock([
+            'http://example.com/foo.gif',
+            'http://example.info/redirect/http://example.com/',
+        ]);
+    }
+
     public function testLoadRulesLocally()
     {
         $this->parser = new AdblockParser;
         $this->parser->loadRules(__DIR__ . '/test-rules.txt');
-        $this->assertEquals(3, count($this->parser->getRules()));
-        $this->shouldBlock('http://example.com/avantlink/123');
-        $this->shouldBlock('http://example.com//avmws_asd.js');
+        $this->assertEquals(4, count($this->parser->getRules()));
+        $this->shouldBlock([
+            'http://example.com/avantlink/123',
+            'http://example.com//avmws_asd.js',
+        ]);
+        $this->shouldNotBlock('http://example.com//avmws_exception.js');
     }
 
     public function testLoadRemoteRules()

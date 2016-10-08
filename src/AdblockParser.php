@@ -20,6 +20,7 @@ class AdblockParser
             try {
                 $this->rules[] = new AdblockRule($rule);
             } catch (InvalidRuleException $e) {
+                // Skip invalid rules
             }
         }
 
@@ -50,7 +51,7 @@ class AdblockParser
     }
 
     /**
-     * @return  []
+     * @return  array
      */
     public function getRules()
     {

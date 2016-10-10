@@ -5,6 +5,10 @@ class AdblockParser
 {
     private $rules;
 
+    private $cacheExpire = 1; // 1 day
+
+    const CACHE_FOLDER = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR;
+
     public function __construct($rules = [])
     {
         $this->rules = [];
@@ -37,7 +41,11 @@ class AdblockParser
     {
         // single resource
         if (is_string($path)) {
-            $content = @file_get_contents($path);
+            if (filter_var($path, FILTER_VALIDATE_URL)) {
+                $content = $this->getCachedResource($path);
+            } else {
+                $content = @file_get_contents($path);
+            }
             if ($content) {
                 $rules = preg_split("/(\r\n|\n|\r)/", $content);
                 $this->addRules($rules);
@@ -61,10 +69,16 @@ class AdblockParser
     /**
      * @param  string  $url
      *
-     * @return boolean
+     * @return integer
      */
     public function shouldBlock($url)
     {
+        $url = trim($url);
+
+        if (filter_var($url, FILTER_VALIDATE_URL) === false) {
+            throw new \Exception("Invalid URL");
+        }
+
         foreach ($this->rules as $rule) {
             if ($rule->isComment() || $rule->isHtml()) {
                 continue;
@@ -89,5 +103,58 @@ class AdblockParser
     public function shouldNotBlock($url)
     {
         return !$this->shouldBlock($url);
+    }
+
+    /**
+     * Get external resources cache expire (in days)
+     *
+     * @return integer
+     */
+    public function getCacheExpire()
+    {
+        return $this->cacheExpire;
+    }
+
+    /**
+     * Set external resources cache expire (in days)
+     *
+     * @param  integer  $expireInDays
+     */
+    public function setCacheExpire($expireInDays)
+    {
+        $this->cacheExpire = $expireInDays;
+    }
+
+    /**
+     * Clear external resources cache
+     */
+    public function clearCache()
+    {
+        foreach (glob(self::CACHE_FOLDER . '*') as $file) {
+            unlink($file);
+        }
+    }
+
+    /**
+     * @param  string  $url
+     *
+     * @return string
+     */
+    private function getCachedResource($url)
+    {
+        $cacheFile = self::CACHE_FOLDER . basename($url) . md5($url);
+
+        if (file_exists($cacheFile) && (filemtime($cacheFile) > (time() - 60 * 24 * $this->cacheExpire))) {
+            // Cache file is less than five minutes old.
+            // Don't bother refreshing, just use the file as-is.
+            $content = @file_get_contents($cacheFile);
+        } else {
+            // Our cache is out-of-date, so load the data from our remote server,
+            // and also save it over our cache for next time.
+            $content = @file_get_contents($url);
+            file_put_contents($cacheFile, $content, LOCK_EX);
+        }
+
+        return $content;
     }
 }

@@ -5,9 +5,17 @@ use Limonte\AdblockParser;
 
 class AdblockParserTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @expectedException Exception
+     */
+    public function testInvalidUrl()
+    {
+        $this->parser = new AdblockParser;
+        $this->shouldBlock('sfsaf');
+    }
+
     public function testBlockByAddressParts()
     {
-
         $this->parser = new AdblockParser(['/banner/*/img^']);
         $this->shouldBlock([
             'http://example.com/banner/foo/img',
@@ -96,7 +104,7 @@ class AdblockParserTest extends \PHPUnit_Framework_TestCase
         ]);
     }
 
-    public function testException()
+    public function testParserException()
     {
         $this->parser = new AdblockParser(['adv', '@@advice.']);
         $this->shouldBlock([
@@ -133,9 +141,23 @@ class AdblockParserTest extends \PHPUnit_Framework_TestCase
     public function testLoadRemoteRules()
     {
         $this->parser = new AdblockParser;
-        $this->parser->loadRules(
-            'https://raw.githubusercontent.com/easylist/easylist/master/easylistfanboy/other/adult-addon.txt'
-        );
+        $this->assertEquals(1, $this->parser->getCacheExpire());
+        $this->parser->clearCache();
+        $this->assertEquals(0, count(glob(AdblockParser::CACHE_FOLDER . '*')));
+        $this->parser->loadRules([
+            'https://raw.githubusercontent.com/easylist/easylist/master/easylistfanboy/other/adult-addon.txt',
+            'https://raw.githubusercontent.com/easylist/easylist/master/easylistfanboy/other/tracking-intl.txt',
+        ]);
+        $this->assertEquals(2, count(glob(AdblockParser::CACHE_FOLDER . '*')));
+        $this->parser->loadRules([
+            'https://raw.githubusercontent.com/easylist/easylist/master/easylistfanboy/other/adult-addon.txt',
+        ]);
+
+        $this->parser->clearCache();
+        $this->assertEquals(0, count(glob(AdblockParser::CACHE_FOLDER . '*')));
+
+        $this->parser->setCacheExpire(0);
+
         $this->shouldBlock('http://dot.wp.pl/');
     }
 

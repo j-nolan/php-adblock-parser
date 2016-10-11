@@ -142,19 +142,21 @@ class AdblockParserTest extends \PHPUnit_Framework_TestCase
     {
         $this->parser = new AdblockParser;
         $this->assertEquals(1, $this->parser->getCacheExpire());
+        $this->parser->setCacheFolder(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'cache');
         $this->parser->clearCache();
-        $this->assertEquals(0, count(glob(AdblockParser::CACHE_FOLDER . '*')));
+        $glob = $this->parser->getCacheFolder() . '*';
+        $this->assertEquals(0, count(glob($glob)));
         $this->parser->loadRules([
             'https://raw.githubusercontent.com/easylist/easylist/master/easylistfanboy/other/adult-addon.txt',
             'https://raw.githubusercontent.com/easylist/easylist/master/easylistfanboy/other/tracking-intl.txt',
         ]);
-        $this->assertEquals(2, count(glob(AdblockParser::CACHE_FOLDER . '*')));
+        $this->assertEquals(2, count(glob($glob)));
         $this->parser->loadRules([
             'https://raw.githubusercontent.com/easylist/easylist/master/easylistfanboy/other/adult-addon.txt',
         ]);
 
         $this->parser->clearCache();
-        $this->assertEquals(0, count(glob(AdblockParser::CACHE_FOLDER . '*')));
+        $this->assertEquals(0, count(glob($glob)));
 
         $this->parser->setCacheExpire(0);
 

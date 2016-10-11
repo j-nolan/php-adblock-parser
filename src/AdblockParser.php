@@ -5,9 +5,9 @@ class AdblockParser
 {
     private $rules;
 
-    private $cacheExpire = 1; // 1 day
+    private $cacheFolder;
 
-    const CACHE_FOLDER = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR;
+    private $cacheExpire = 1; // 1 day
 
     public function __construct($rules = [])
     {
@@ -106,7 +106,27 @@ class AdblockParser
     }
 
     /**
-     * Get external resources cache expire (in days)
+     * Get cache folder
+     *
+     * @return string
+     */
+    public function getCacheFolder()
+    {
+        return $this->cacheFolder;
+    }
+
+    /**
+     * Set cache folder
+     *
+     * @param  string  $cacheFolder
+     */
+    public function setCacheFolder($cacheFolder)
+    {
+        $this->cacheFolder = rtrim($cacheFolder, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * Get cache expire (in days)
      *
      * @return integer
      */
@@ -116,7 +136,7 @@ class AdblockParser
     }
 
     /**
-     * Set external resources cache expire (in days)
+     * Set cache expire (in days)
      *
      * @param  integer  $expireInDays
      */
@@ -130,8 +150,10 @@ class AdblockParser
      */
     public function clearCache()
     {
-        foreach (glob(self::CACHE_FOLDER . '*') as $file) {
-            unlink($file);
+        if ($this->cacheFolder) {
+            foreach (glob($this->cacheFolder . '*') as $file) {
+                unlink($file);
+            }
         }
     }
 
@@ -142,7 +164,11 @@ class AdblockParser
      */
     private function getCachedResource($url)
     {
-        $cacheFile = self::CACHE_FOLDER . basename($url) . md5($url);
+        if (!$this->cacheFolder) {
+            return @file_get_contents($url);
+        }
+
+        $cacheFile = $this->cacheFolder . basename($url) . md5($url);
 
         if (file_exists($cacheFile) && (filemtime($cacheFile) > (time() - 60 * 24 * $this->cacheExpire))) {
             // Cache file is less than five minutes old.

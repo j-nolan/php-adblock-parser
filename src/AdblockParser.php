@@ -178,7 +178,9 @@ class AdblockParser
             // Our cache is out-of-date, so load the data from our remote server,
             // and also save it over our cache for next time.
             $content = @file_get_contents($url);
-            file_put_contents($cacheFile, $content, LOCK_EX);
+            if ($content) {
+                file_put_contents($cacheFile, $content, LOCK_EX);
+            }
         }
 
         return $content;

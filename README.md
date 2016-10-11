@@ -46,7 +46,5 @@ Related projects
 - McAfee SiteAdvisor PHP library: [limonte/mcafee-siteadvisor](https://github.com/limonte/mcafee-siteadvisor)
 - Check if link is SPAM: [limonte/spam-link-analyser](https://github.com/limonte/spam-link-analyser)
 
-
 - Python parser for Adblock Plus filters: [scrapinghub/adblockparser](https://github.com/scrapinghub/adblockparser/)
 - EasyList filter subscription: [easylist/easylist](https://github.com/easylist/easylist/)
-

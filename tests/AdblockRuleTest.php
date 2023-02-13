@@ -4,7 +4,7 @@ namespace Limonte\Tests;
 use Limonte\AdblockRule;
 use Limonte\InvalidRuleException;
 
-class AdblockRuleTest extends \PHPUnit_Framework_TestCase
+class AdblockRuleTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetRegex()
     {

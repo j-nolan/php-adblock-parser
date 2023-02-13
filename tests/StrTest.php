@@ -3,7 +3,7 @@ namespace Limonte\Str;
 
 use Limonte\Str;
 
-class StrTest extends \PHPUnit_Framework_TestCase
+class StrTest extends \PHPUnit\Framework\TestCase
 {
     public function testStartsWith()
     {

@@ -1,10 +1,11 @@
 {
-  "name": "limonte/php-adblock-parser",
-  "description": "Check if link is spam via Google Safebrowsing",
+  "name": "protonlabs/php-adblock-parser",
+  "description": "PHP parser for Adblock Plus filters. A snapshot of abandoned limonte/php-adblock-parser",
   "keywords": [
     "adblock",
     "parser"
   ],
+  "version": "1.0.0",
   "homepage": "https://github.com/limonte/php-adblock-parser",
   "license": "MIT",
   "authors": [
@@ -17,7 +18,7 @@
     "ext-mbstring": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "~5.5"
+    "phpunit/phpunit": "*"
   },
   "autoload": {
     "psr-4": {

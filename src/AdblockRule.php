@@ -1,19 +1,22 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Limonte;
 
 class AdblockRule
 {
-    private $rule;
+    private string $rule;
 
-    private $regex;
+    private ?string $regex = null;
 
-    private $isComment = false;
+    private bool $isComment = false;
 
-    private $isHtml = false;
+    private bool $isHtml = false;
 
-    private $isException = false;
+    private bool $isException = false;
 
-    public function __construct($rule)
+    public function __construct(string $rule)
     {
         $this->rule = $rule;
 
@@ -36,52 +39,35 @@ class AdblockRule
         }
     }
 
-    /**
-     * @param  string  $url
-     *
-     * @return  boolean
-     */
-    public function matchUrl($url)
+    public function matchUrl(string $url): bool
     {
-        return (boolean)preg_match(
-            '/' . $this->getRegex() . '/',
-            $url
+        return (bool) preg_match(
+            '/' . ($this->getRegex() ?? '') . '/',
+            $url,
         );
     }
 
-    /**
-     * @return  string
-     */
-    public function getRegex()
+    public function getRegex(): ?string
     {
         return $this->regex;
     }
 
-    /**
-     * @return  boolean
-     */
-    public function isComment()
+    public function isComment(): bool
     {
         return $this->isComment;
     }
 
-    /**
-     * @return  boolean
-     */
-    public function isHtml()
+    public function isHtml(): bool
     {
         return $this->isHtml;
     }
 
-    /**
-     * @return  boolean
-     */
-    public function isException()
+    public function isException(): bool
     {
         return $this->isException;
     }
 
-    private function makeRegex()
+    private function makeRegex(): void
     {
         if (empty($this->rule)) {
             throw new InvalidRuleException("Empty rule");

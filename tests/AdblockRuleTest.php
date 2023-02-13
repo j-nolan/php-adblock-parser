@@ -67,4 +67,18 @@ class AdblockRuleTest extends \PHPUnit\Framework\TestCase
         $rule = new AdblockRule('non-comment rule');
         $this->assertFalse($rule->isComment());
     }
+
+    public function testRegistrableDomain(): void
+    {
+        $rule = new AdblockRule('/banThisPath.');
+        $this->assertNull($rule->getRegistrableDomain());
+        $rule = new AdblockRule('||domain.com');
+        $this->assertSame('domain.com', $rule->getRegistrableDomain());
+        $rule = new AdblockRule('||domain.com/aPath');
+        $this->assertSame('domain.com', $rule->getRegistrableDomain());
+        $rule = new AdblockRule('||subdomain.domain.com^*/aPath');
+        $this->assertSame('domain.com', $rule->getRegistrableDomain());
+        $rule = new AdblockRule('@@||subdomain.domain.com^*/aPath');
+        $this->assertSame('domain.com', $rule->getRegistrableDomain());
+    }
 }

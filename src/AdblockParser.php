@@ -6,10 +6,12 @@ namespace Limonte;
 
 class AdblockParser
 {
+    public const DOMAIN_AGNOSTIC_IDENTIFIER = 'domain-agnostic';
+
     public const ONE_DAY_IN_SECONDS = 24 * 60 * 60;
 
-    /** @var list<AdblockRule> */
-    private array $rules;
+    /** @var array<string,AdblockRuleCollection> */
+    private array $ruleCollections;
 
     private ?string $cacheFolder = null;
 
@@ -18,7 +20,7 @@ class AdblockParser
     /** @param array<string> $rules */
     public function __construct(array $rules = [])
     {
-        $this->rules = [];
+        $this->ruleCollections = [];
         $this->addRules($rules);
     }
 
@@ -27,16 +29,16 @@ class AdblockParser
     {
         foreach ($rules as $rule) {
             try {
-                $this->rules[] = new AdblockRule($rule);
+                $adblockRule = new AdblockRule($rule);
+                $domainIdentifier = $adblockRule->getRegistrableDomain() ?? self::DOMAIN_AGNOSTIC_IDENTIFIER;
+                if (!isset($this->ruleCollections[$domainIdentifier])) {
+                    $this->ruleCollections[$domainIdentifier] = new AdblockRuleCollection();
+                }
+                $this->ruleCollections[$domainIdentifier]->addRule($adblockRule);
             } catch (InvalidRuleException) {
                 // Skip invalid rules
             }
         }
-
-        // Sort rules, exceptions first
-        usort($this->rules, static function ($a, $b) {
-            return (int) $b->isException() <=> (int) $a->isException();
-        });
     }
 
     /** @param array $paths */
@@ -60,9 +62,9 @@ class AdblockParser
         }
     }
 
-    public function getRules(): array
+    public function getRuleCollections(): array
     {
-        return $this->rules;
+        return $this->ruleCollections;
     }
 
     public function shouldBlock(string $url): bool
@@ -73,7 +75,13 @@ class AdblockParser
             throw new NotAnUrlException('Invalid URL');
         }
 
-        foreach ($this->rules as $rule) {
+        $host = parse_url($url)['host'];
+        if (!is_string($host)) {
+            throw new NotAnUrlException('Invalid URL');
+        }
+        $registrableDomain = DomainParser::parseRegistrableDomain($host);
+
+        foreach ($this->getRulesToApplyForDomain($registrableDomain) as $rule) {
             if ($rule->isComment() || $rule->isHtml()) {
                 continue;
             }
@@ -151,5 +159,18 @@ class AdblockParser
         }
 
         return $content ?: null;
+    }
+
+    /**
+     * @return list<AdblockRule>
+     */
+    private function getRulesToApplyForDomain(string $registrableDomain): array
+    {
+        return array_merge( // exceptions must go first
+            ($this->ruleCollections[self::DOMAIN_AGNOSTIC_IDENTIFIER] ?? null)?->getExceptions() ?? [],
+            ($this->ruleCollections[$registrableDomain] ?? null)?->getExceptions() ?? [],
+            ($this->ruleCollections[self::DOMAIN_AGNOSTIC_IDENTIFIER] ?? null)?->getBlockers() ?? [],
+            ($this->ruleCollections[$registrableDomain] ?? null)?->getBlockers() ?? [],
+        );
     }
 }

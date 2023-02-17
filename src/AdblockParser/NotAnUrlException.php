@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Limonte;
+namespace App\AdblockParser;
 
 class NotAnUrlException extends \Exception
 {

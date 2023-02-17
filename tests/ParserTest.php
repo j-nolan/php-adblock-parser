@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Limonte\Tests;
+namespace App\Tests;
 
-use Limonte\AdblockParser;
-use Limonte\NotAnUrlException;
+use App\AdblockParser\Parser;
+use App\AdblockParser\NotAnUrlException;
+use PHPUnit\Framework\TestCase;
 
-class AdblockParserTest extends \PHPUnit\Framework\TestCase
+class ParserTest extends TestCase
 {
     /**
      * @expectedException Exception
@@ -15,13 +16,13 @@ class AdblockParserTest extends \PHPUnit\Framework\TestCase
     public function testInvalidUrl(): void
     {
         $this->expectException(NotAnUrlException::class);
-        $this->parser = new AdblockParser();
+        $this->parser = new Parser();
         $this->shouldBlock(['sfsaf']);
     }
 
     public function testBlockByAddressParts(): void
     {
-        $this->parser = new AdblockParser(['/banner/*/img^']);
+        $this->parser = new Parser(['/banner/*/img^']);
         $this->shouldBlock([
             'http://example.com/banner/foo/img',
             'http://example.com/banner/foo/bar/img?param',
@@ -36,7 +37,7 @@ class AdblockParserTest extends \PHPUnit\Framework\TestCase
 
     public function testBlockByDomainName(): void
     {
-        $this->parser = new AdblockParser(['||ads.example.com^']);
+        $this->parser = new Parser(['||ads.example.com^']);
         $this->shouldBlock([
             'http://ads.example.com/foo.gif',
             'http://server1.ads.example.com/foo.gif',
@@ -47,7 +48,7 @@ class AdblockParserTest extends \PHPUnit\Framework\TestCase
             'http://example.com/redirect/http://ads.example.com/',
         ]);
 
-        $this->parser = new AdblockParser(['|http://baddomain.example/']);
+        $this->parser = new Parser(['|http://baddomain.example/']);
         $this->shouldBlock([
             'http://baddomain.example/banner.gif',
         ]);
@@ -58,7 +59,7 @@ class AdblockParserTest extends \PHPUnit\Framework\TestCase
 
     public function testBlockExactAddress(): void
     {
-        $this->parser = new AdblockParser(['|http://example.com/|']);
+        $this->parser = new Parser(['|http://example.com/|']);
         $this->shouldBlock([
             'http://example.com/',
         ]);
@@ -70,7 +71,7 @@ class AdblockParserTest extends \PHPUnit\Framework\TestCase
 
     public function testBlockBeginningDomain(): void
     {
-        $this->parser = new AdblockParser(['||example.com/banner.gif']);
+        $this->parser = new Parser(['||example.com/banner.gif']);
         $this->shouldBlock([
             'http://example.com/banner.gif',
             'https://example.com/banner.gif',
@@ -84,7 +85,7 @@ class AdblockParserTest extends \PHPUnit\Framework\TestCase
 
     public function testCaretSeparator(): void
     {
-        $this->parser = new AdblockParser(['http://example.com^']);
+        $this->parser = new Parser(['http://example.com^']);
         $this->shouldBlock([
             'http://example.com/',
             'http://example.com:8000/ ',
@@ -93,17 +94,17 @@ class AdblockParserTest extends \PHPUnit\Framework\TestCase
             'http://example.com.ar/',
         ]);
 
-        $this->parser = new AdblockParser(['^example.com^']);
+        $this->parser = new Parser(['^example.com^']);
         $this->shouldBlock([
             'http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82',
         ]);
 
-        $this->parser = new AdblockParser(['^%D1%82%D0%B5%D1%81%D1%82^']);
+        $this->parser = new Parser(['^%D1%82%D0%B5%D1%81%D1%82^']);
         $this->shouldBlock([
             'http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82',
         ]);
 
-        $this->parser = new AdblockParser(['^foo.bar^']);
+        $this->parser = new Parser(['^foo.bar^']);
         $this->shouldBlock([
             'http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82',
         ]);
@@ -111,7 +112,7 @@ class AdblockParserTest extends \PHPUnit\Framework\TestCase
 
     public function testParserException(): void
     {
-        $this->parser = new AdblockParser(['adv', '@@advice.']);
+        $this->parser = new Parser(['adv', '@@advice.']);
         $this->shouldBlock([
             'http://example.com/advert.html',
         ]);
@@ -119,7 +120,7 @@ class AdblockParserTest extends \PHPUnit\Framework\TestCase
             'http://example.com/advice.html',
         ]);
 
-        $this->parser = new AdblockParser(['@@|http://example.com', '@@advice.', 'adv', '!foo']);
+        $this->parser = new Parser(['@@|http://example.com', '@@advice.', 'adv', '!foo']);
         $this->shouldBlock([
             'http://examples.com/advert.html',
         ]);
@@ -129,59 +130,6 @@ class AdblockParserTest extends \PHPUnit\Framework\TestCase
             'http://examples.com/advice.html',
             'http://examples.com/#!foo',
         ]);
-    }
-
-    public function testLoadRulesLocally(): void
-    {
-        $this->parser = new AdblockParser();
-        $this->parser->loadRulesFromPath(__DIR__ . '/test-rules.txt');
-        $this->assertCount(1, $this->parser->getRuleCollections());
-        $this->assertCount(
-            2,
-            $this->parser->getRuleCollections()[AdblockParser::DOMAIN_AGNOSTIC_IDENTIFIER]->getBlockers(),
-        );
-        $this->shouldBlock([
-            'http://example.com/avantlink/123',
-            'http://example.com//avmws_asd.js',
-        ]);
-        $this->shouldNotBlock(['http://example.com//avmws_exception.js']);
-    }
-
-    public function testLoadRemoteRules(): void
-    {
-        $this->parser = new AdblockParser();
-        $this->assertSame(AdblockParser::ONE_DAY_IN_SECONDS, $this->parser->getCacheExpireInSeconds());
-        $this->parser->setCacheFolder(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'cache');
-        $this->parser->clearCache();
-        $glob = $this->parser->getCacheFolder() . '*';
-        $this->assertSame(0, count(glob($glob)));
-        $this->parser->loadRulesFromPaths([
-            'https://raw.githubusercontent.com/easylist/easylist/master/easylist_adult/adult_adservers.txt',
-            'https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_trackingservers.txt',
-        ]);
-        $this->assertSame(2, count(glob($glob)));
-        $this->parser->loadRulesFromPaths([
-            'https://raw.githubusercontent.com/easylist/easylist/master/easylist_adult/adult_adservers.txt',
-        ]);
-
-        $this->parser->clearCache();
-        $this->assertSame(0, count(glob($glob)));
-
-        $this->parser->setCacheExpireInSeconds(0);
-
-        $this->shouldBlock(['http://00px.net/']);
-    }
-
-    public function testLoadArrayOfResources(): void
-    {
-        $this->parser = new AdblockParser();
-        $this->parser->loadRulesFromPaths([
-            'https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_general_block.txt',
-            'https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_trackingservers.txt',
-        ]);
-
-        $this->shouldBlock(['https://hello.com-ad-300x600-']); // rule from the first resource
-        $this->shouldBlock(['http://00px.net/']); // rule from the second resource
     }
 
     /**

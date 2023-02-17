@@ -1,7 +1,7 @@
 <?php
-namespace Limonte\Str;
+namespace App\AdblockParser\Str;
 
-use Limonte\Str;
+use App\AdblockParser\Str;
 
 class StrTest extends \PHPUnit\Framework\TestCase
 {
